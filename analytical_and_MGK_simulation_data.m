@@ -2,8 +2,9 @@ clear all
 hold off 
 
 savepdf = true;
-table_values = false;
-table_figures = true;
+table_values = true;
+table_values_complete = true;
+table_figures = false;
 
 identifier   = ['^', 'o', 's'];
 colors_an    = ['r', 'g', 'b']; % colors for analytical data
@@ -42,16 +43,24 @@ if table_values
     % Columns:  Es/El, \alpha, \rho, K_{\mu}^{\star}(simulation),
     %           K_{\sigma}^{\star}(simulation), \mu^{\star}, \sigma^{\star},
     %           \mu_{k=1}, \sigma_{k=1}
+    
+    if table_values_complete
+        txt = sprintf('\\begin{tabular}{|c|c|c|c|c|c|c|c|c|}'); disp(txt);
+        txt = sprintf('\\hline'); disp(txt);
+        txt = '$E_{S}/$ &          &        & \multicolumn{6}{c|}{analytical (simulation)} \\';
+        disp(txt);
+        txt = '$E_{L}$  & $\alpha$ & $\rho$ & $K^{\star}_{\mu}$ & $K^{\star}_{\sigma}$ & $\mu^{\star}$ & $\sigma^{\star}$ & $\mu_{K=1}$ & $\sigma_{K=1}$ \\';
+        disp(txt);
+    else
+        txt = sprintf('\\begin{tabular}{|c|c|c|c|c|c|c|}'); disp(txt);
+        txt = sprintf('\\hline'); disp(txt);
+        txt = '$E_{S}/$ &          &        & \multicolumn{4}{c|}{analytical (simulation)} \\';
+        disp(txt);
+        txt = '$E_{L}$  & $\alpha$ & $\rho$ & $K^{\star}_{\mu}$ & $K^{\star}_{\sigma}$ & $\mu^{\star}$ & $\sigma^{\star}$ \\';
+        disp(txt);        
+    end
 
-    txt = sprintf('\\begin{tabular}{|c|c|c|c|c|c|}'); disp(txt);
-    txt = sprintf('\\hline'); disp(txt);
-    txt = 'Fig.                    &           &  \multicolumn{4}{c|}{analytical (simulation)} \\';
-    disp(txt);
-    txt = '\ref{fig:response_time}  & $\rho$   & $K^{\star}_\mu$  & $K^{\star}_\sigma$ & $\mu^{\star}$ & $\sigma^{\star}$ \\';
-    disp(txt);
 
-    %txt = sprintf('\\hline \n$E(X_S)/E(X_L)$ \t& $\\alpha$ \t& $\\rho$ \t& $min \\: k(\\mu)$  \t& $min \\: k(\\sigma)$  \t& $min \\: k(\\mu)$  \t& $min \\: k(\\sigma)$ \t\\\\');
-    %disp(txt);
 end
 
 if table_figures
@@ -167,7 +176,7 @@ for El = El_vec
             hold off;
             
             
-            %% Latex table:
+            %% Latex table of values:
             if table_values
                 [T_min, T_idx]   = min(T);
                 [T2_min, T2_idx] = min(T2);
@@ -176,17 +185,30 @@ for El = El_vec
 
                 [MinM, iMinM]    = min(M);
                 [MinS, iMinS]    = min(S);
+                
+                if table_values_complete
+                    % Columns: Es/El, \alpha, \rho,
+                    % K^{\star}_{\mu}(simulation), K^{\star}_{\sigma}
+                    % (simul), \mu^{\star}(simul), \sigma^{\star}(simul), 
+                    % \mu_{K=1}, \sigma_{K=1}
+                    txt = sprintf('\t\t\\hline'); disp(txt);
+                    txt = sprintf('\t\t $%6.4f$ \t& $%4.2f$ \t& $%4.2f$ \t& $%d(%d)$ \t& $%d$(%d) \t& $%7.2f(%7.2f)$ \t& $%7.2f(%7.2f)$ \t& (%7.2f) \t& (%7.2f)  \\\\', Es/El, alpha1, rho, k_min, iMinM, k2_min, iMinS, T_min, MinM, T2_min, MinS, T(1), T2(1));
+                    disp(txt);
+                    
+                else
+                    % Columns:  figure letter, \rho, K_{\mu}^{\star}(simulation),
+                    %           K_{\sigma}^{\star}(simulation),
+                    %           (\mu^{\star}), (\sigma^{\star})
+                    [num, let] = get_figure(Es/El, alpha1);
 
-                % Columns:  figure letter, \rho, K_{\mu}^{\star}(simulation),
-                %           K_{\sigma}^{\star}, \mu^{\star}, \sigma^{\star}
-                [num, let] = get_figure(Es/El, alpha1);
-                txt = sprintf('\t\t\\hline'); disp(txt);
-                %txt = sprintf('\t\t %s & $%4.2f$ \t& $%d(%d)$ \t& $%d(%d)$ \t& $%7.2f (%7.2f)$  \t& $%7.2f (%7.2f)$ \t\\\\', let, rho, k_min, iMinM, k2_min, iMinS,T_min, MinM, T2_min, MinS);
+                    txt = sprintf('\t\t\\hline'); disp(txt);
+                    txt = sprintf('\t\t %s & $%4.2f$ \t& $%d(%d)$ \t& $%d$(%d) \t& $(%7.2f)$    \t& $(%7.2f)$ \t\\\\', let, rho, k_min, iMinM, k2_min, iMinS, MinM, MinS);
+                    disp(txt);
+                    %txt = sprintf('\t\t    &         \t&          \t&          \t& $(%7.2f)$ \t& $(%7.2f)$ \t\\\\', T_min, T2_min); 
+                    %disp(txt);
+                end
 
-                txt = sprintf('\t\t %s & $%4.2f$ \t& $%d(%d)$ \t& $%d$(%d) \t& $(%7.2f)$    \t& $(%7.2f)$ \t\\\\', let, rho, k_min, iMinM, k2_min, iMinS, MinM, MinS);
-                %disp(txt);
-                %txt = sprintf('\t\t    &         \t&          \t&          \t& $(%7.2f)$ \t& $(%7.2f)$ \t\\\\', T_min, T2_min); 
-                %disp(txt);
+
             end
             
             %% Latex table of figures
