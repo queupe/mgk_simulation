@@ -12,6 +12,8 @@ from datetime import datetime
 from pathlib import Path
 
 
+_DETAILED_ = False
+
 def read_entry (filename = 'entry_jobs.csv'):
     entry_lst = list()
     with open(filename) as fd_in:
@@ -75,8 +77,8 @@ def queue_mmk_typed (entry_lst, time_service_type, k_servers):
             serves_lst.append([job_id, job_time_enter, job_time_server, job_time_out, job_type, job_server])
 
     #if (k_servers == 3):
-    '''
-    if True:
+
+    if _DETAILED_:
         with open("./output/results_python_factor_{:7.5f}_servers_{:2d}.csv".format(time_service_type[0]/time_service_type[1], k_servers),'a') as fd:
             for job_t in job_hist:
                 fd.write('{:6d}, {:20.8f}, {:25.8f}, {:20.8f}, {:2d}, {:2d}, {:20.8f}, {:20.8f}, {:16.2f}\n'.format(job_t[0],
@@ -88,7 +90,7 @@ def queue_mmk_typed (entry_lst, time_service_type, k_servers):
                     job_t[3] - job_t[1]  ,
                     job_t[2] - job_t[1]  ,
                     job_t[3] - job_t[2] ))
-    '''
+
     return job_hist # id, time_enter, time_served, time_out, job_type, server
 
 def queue_mmk_typed_with_error(entry_lst_vec, time_service_type, num_servers):
@@ -184,16 +186,16 @@ def main():
 
     counter = 0
 
-    num_servers = 100
+    num_servers = 10
 
     #only to tests -
-    #Es = 54.13
-    #El_vec    = [Es/0.0005]
-    #alpha_vec = [0.99]
-    #rho_vec   = [0.95]
-    rounds_t  = 5
+    Es = 54.13
+    El_vec    = [Es/0.05]
+    alpha_vec = [0.99]
+    rho_vec   = [0.95, 0.5]
+    rounds_t  = 26
 
-    num_samples = 100000
+    num_samples = 1000000
     #print('{}\t{}\t{}\t{}\t{}\t{}\t{}'.format('serves','mean', 'err+', 'err-', 'sigma', 'err+', 'err-'))
 
     # Específic values:
@@ -227,7 +229,7 @@ def main():
                 k_aux = 0
                 k_servers = range(1, len(results) + 1)
 
-                file_round_name ='output/fig_Bfactor_{:6.4f}_alpha_{:4.2f}_rho_{:4.2f}.csv'.format(Es/El, alpha, rho)
+                file_round_name ='output/data_Bfactor_{:6.4f}_alpha_{:4.2f}_rho_{:4.2f}.csv'.format(Es/El, alpha, rho)
                 with open(file_round_name,'w') as fd_out:
                     for res in results:
                         k_aux +=1

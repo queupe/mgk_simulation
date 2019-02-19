@@ -152,8 +152,23 @@ class Processor {
 
 unsigned int Processor::insert_time(long double proc_time)
 {
-  unsigned int j=0;
+  int j;
   long double aux;
+
+  if (Processor::occuped < Processor::number){
+    j = Processor::occuped;
+    Processor::times[j] = proc_time;
+    while(j > 0 && Processor::times[j-1] > Processor::times[j]) {
+        aux                   = Processor::times[j-1];
+        Processor::times[j-1] = Processor::times[j];
+        Processor::times[j]   = aux;
+        j++;
+    }
+    Processor::occuped++;
+    return Processor::occuped - 1;
+  }
+
+  j = 0;
   Processor::times[j] = proc_time;
   j++;
   while (j < Processor::occuped && Processor::times[j-1] > Processor::times[j]){
@@ -208,7 +223,6 @@ JobFull Processor::update(JobFull job)
     {
         // Setting the enter time in one core of the processor
         job.setTimeProcess(job.getTime_input());
-        occuped++;
     }else {
         if (job.getTime_input() > times[0]) {
           job.setTimeProcess(job.getTime_input());

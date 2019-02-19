@@ -1,13 +1,15 @@
 MMK Simulator
 
 Usage:
-        python3 mmk_simulator_v2.py
+        python3 mmk_simulator_v3.py
 
-It expect read the input files in ./input_data with folow configuration:
-        Es    = 54.13
-        El    = [Es/0.0005, Es/0.005, Es/0.05]
-        alpha = [0.6, 0.8, 0.99]
-        rho   = [0.95, 0.8, 0.5]
+It expect read the input files in "./input_data/" with entries values of a distributed system.
+The files include in this repository was made with the follow configurations:
+
+        Es    = 54.13                           # Espected cost of a short job
+        El    = [Es/0.0005, Es/0.005, Es/0.05]  # Espected cost of a long job
+        alpha = [0.6, 0.8, 0.99]                # Proportion of short jobs
+        rho   = [0.95, 0.8, 0.5]                # Utilization of the system
         round = [1:5]
 
         'B_factor_{:8.6f}_alpha_{:6.4f}_rho_{:6.4f}_round_{:d}_csv'.format(Es/El, alpha, rho, round)

@@ -2,6 +2,9 @@ clear all
 
 colors_mu    = ['r', 'g', 'b'];
 
+INPUT_FOLDER_CVS = './output/1M_samples/';
+OUTPUT_FOLDER_PDF = './img/1M_samples_python/';
+
 E_s = 54.13;
 E_l_vec = [E_s/0.05, E_s/0.005, E_s/0.0005];
 alpha_vec = [0.6, 0.8, 0.99];
@@ -15,9 +18,9 @@ for E_l = E_l_vec
         j = 0;
         for rho = rho_vec
             j = 1 + j;
-            str_file = sprintf('/home/vilc/Downloads/MDmk/output/100k_samples/fig_Bfactor_%6.4f_alpha_%4.2f_rho_%4.2f.csv', E_s/E_l, alpha1, rho);
+            str_file = sprintf('%sfig_Bfactor_%6.4f_alpha_%4.2f_rho_%4.2f.csv', INPUT_FOLDER_CVS, E_s/E_l, alpha1, rho);
 
-            %disp(str_file)
+            disp(str_file)
             A = csvread(str_file);
             K = (A(:,1));
 
@@ -58,8 +61,7 @@ for E_l = E_l_vec
         xlabel('number of servers (K)');
         str_file = sprintf('B_factor_%8.6f__alpha_%4.2f__rho_%2.2fx%4.2f', E_s/E_l, alpha1, rho_vec(length(rho_vec)), rho_vec(1));
         str_file = strrep(str_file , '.','_');
-        file_name_prfx = '/home/vilc/Downloads/MDmk/img/100k_samples_python/';
-        str_file_std = sprintf('%s%sb.pdf', file_name_prfx ,str_file);
+        str_file_std = sprintf('%s%sb.pdf', OUTPUT_FOLDER_PDF ,str_file);
         fig = gcf;
         fig.PaperPositionMode = 'auto';
         fig_pos = fig.PaperPosition;

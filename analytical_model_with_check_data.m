@@ -10,16 +10,19 @@ line_sigma   = ['--'];
 i = 1;
 legd_txt =['', '', '','', '', ''];
 
-PREFIX_CVS_FILES = '/home/vilc/Downloads/MDmk/output/100k_samples/';
-PREFIX_IMG_FILES = '/home/vilc/Documents/UFRJ/git/microservice/img/analytical_model/fig_v12_';
+PREFIX_CVS_FILES = '/home/vilc/Downloads/MDmk/output/1M_samples/';
+PREFIX_IMG_FILES = '/home/vilc/Documents/UFRJ/git/microservice/img/fig_v15_';
 
-Es        = 54.13; % mean service time of short jobs
-El         = 95.2; % mean service time of long jobs (long tail)
-El_vec     = [Es/0.05, Es/0.005, Es/0.0005];
+Es         = 54.13; % mean service time of short jobs
+El         = 95.2;  % mean service time of long jobs (long tail)
+El_vec     = [Es/0.0005, Es/0.005, Es/0.05];
+%El_vec     = [Es/0.05];
 alpha1    = 0.995; % fraction of short jobs 
-alpha_vec = [0.6, 0.8, 0.99];
+alpha_vec = [0.99, 0.8, 0.6];
+%alpha_vec = [0.99];
 rho_vec   = [0.95, 0.8, 0.5]; % rho = lambda E(X) = system utilization
-k         = [1:120]; % Number of cores in the processor
+%rho_vec   = [0.95, 0.5]; % rho = lambda E(X) = system utilization
+k         = [1:12]; % Number of cores in the processor
 
 rho_ident_mu    = zeros(1,length(rho_vec));
 rho_ident_sigma = zeros(1,length(rho_vec));
@@ -27,9 +30,20 @@ x_mu            = 1;
 x_sigma         = 1;
 
 %% Header of Latex table 
-txt = sprintf('\\begin{tabular}{|c|c|c|c|c|c|c|}'); disp(txt);
-txt = sprintf('\\hline \n$E(X_S)/E(X_L)$ \t& $\\alpha$ \t& $\\rho$ \t& $min \\: k(\\mu)$  \t& $min \\: k(\\sigma)$  \t& $min \\: k(\\mu)$  \t& $min \\: k(\\sigma)$ \t\\\\');
+
+% Columns:  Es/El, \alpha, \rho, K_{\mu}^{\star}(simulation),
+%           K_{\sigma}^{\star}(simulation), \mu^{\star}, \sigma^{\star},
+%           \mu_{k=1}, \sigma_{k=1}
+
+txt = sprintf('\\begin{tabular}{|c|c|c|c|c|c|}'); disp(txt);
+txt = sprintf('\\hline'); disp(txt);
+txt = 'Fig.                    &           &  \multicolumn{4}{c|}{analytical (simulation)} \\';
 disp(txt);
+txt = '\ref{fig:response_time}  & $\rho$   & $K^{\star}_\mu$  & $K^{\star}_\sigma$ & $\mu^{\star}$ & $\sigma^{\star}$ \\';
+disp(txt);
+
+%txt = sprintf('\\hline \n$E(X_S)/E(X_L)$ \t& $\\alpha$ \t& $\\rho$ \t& $min \\: k(\\mu)$  \t& $min \\: k(\\sigma)$  \t& $min \\: k(\\mu)$  \t& $min \\: k(\\sigma)$ \t\\\\');
+%disp(txt);
 
 %% Loops 
 for El = El_vec
@@ -115,12 +129,12 @@ for El = El_vec
             
             
             %% Save the figure
-            str_file_pdf = sprintf('B_factor_%6.4f_alpha_%4.2f_rho_%4.2f', Es/El, alpha1, rho);
+            str_file_pdf = strrep(sprintf('B_factor_%6.4f_alpha_%4.2f_rho_%4.2f', Es/El, alpha1, rho), '.','_');
             %disp(str_file_pdf);
             str_title = sprintf('\\fontsize{10} \\fontname{Courier} \\alpha=%4.2f; \\rho=%4.2f;  (E(X_{s})/E(X_{l}))=%6.4f',alpha1, rho, Es/El);
 
             if savepdf
-                str_file_std = strcat(PREFIX_IMG_FILES , file_simul, '.pdf');
+                str_file_std = strcat(PREFIX_IMG_FILES , strrep(file_simul,'.','_'), '.pdf');
                 %disp(str_file_std)
                 fig = gcf;
                 fig.PaperPositionMode = 'auto';
@@ -143,10 +157,51 @@ for El = El_vec
             [MinM, iMinM]    = min(M);
             [MinS, iMinS]    = min(S);
             
-            txt = sprintf('\\hline \n$%6.4f$ & $%4.2f$ \t& $%4.2f$ \t& $%3d$ \t& $%3d$  \t& $%3d$ \t& $%3d$ \t\\\\',Es/El, alpha1, rho, k_min, k2_min, iMinM, iMinS);
-            disp(txt);            
+            % Columns:  figure letter, \rho, K_{\mu}^{\star}(simulation),
+            %           K_{\sigma}^{\star}, \mu^{\star}, \sigma^{\star}
+            [num, let] = get_figure(Es/El, alpha1);
+            txt = sprintf('\t\t\\hline'); disp(txt);
+            %txt = sprintf('\t\t %s & $%4.2f$ \t& $%d(%d)$ \t& $%d(%d)$ \t& $%7.2f (%7.2f)$  \t& $%7.2f (%7.2f)$ \t\\\\', let, rho, k_min, iMinM, k2_min, iMinS,T_min, MinM, T2_min, MinS);
+            
+            txt = sprintf('\t\t %s & $%4.2f$ \t& $%d(%d)$ \t& $%d$(%d) \t& $(%7.2f)$    \t& $(%7.2f)$ \t\\\\', let, rho, k_min, iMinM, k2_min, iMinS, MinM, MinS);
+            disp(txt);
+            %txt = sprintf('\t\t    &         \t&          \t&          \t& $(%7.2f)$ \t& $(%7.2f)$ \t\\\\', T_min, T2_min); 
+            %disp(txt);
 
         end
     end
 end
 txt = sprintf('\\hline \n\\end{tabular}'); disp(txt);
+
+
+%% Declared function to get the number of figure from paper
+function  [num, letter] = get_figure(factor_El, alpha1)
+    num = '\ref{fig:response_time}';
+    letter ='';
+    if abs(factor_El - 0.0005) < 0.0001
+        if alpha1 == 0.99
+            letter = 'a';
+        elseif alpha1 == 0.8
+            letter = 'b';
+        elseif alpha1 == 0.6
+            letter = 'c';
+        end
+    elseif abs(factor_El - 0.005) < 0.0001
+        if alpha1 == 0.99
+            letter = 'd';
+        elseif alpha1 == 0.8
+            letter = 'e';
+        elseif alpha1 == 0.6
+            letter = 'f';
+        end
+    elseif abs(factor_El - 0.05) < 0.0001
+        if alpha1 == 0.99
+            letter = 'g';
+        elseif alpha1 == 0.8
+            letter = 'h';
+        elseif alpha1 == 0.6
+            letter = 'i';
+        end
+    end
+
+end
