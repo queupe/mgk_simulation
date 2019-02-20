@@ -1,0 +1,117 @@
+################################################################################
+# File: Makefile                                                               #
+# Authors: {gdjaime,allyson,bnetto}@land.ufrj.br                               #
+# Copyright 2003 LAND/UFRJ                                                     #
+# http://www.land.ufrj.br                                                      #
+#                                                                              #
+# Description: This makefile was created to allow users to run TANGRAM-II      #
+#              simulations without its graphical interface                     #
+#                                                                              #
+# PS: FLAVIO DUARTE was not part of this workgroup                             #
+################################################################################
+
+TGIF = tgif -tgrm2
+GRAMATICA = /usr/local/Tangram2/bin/gramatica
+MARKFIND_MAKEFILE = /usr/local/Tangram2/lib/Makefile.mark_find
+SUFFIX = result
+DEBUG_LEVEL = 0
+RUNS = 1
+
+
+.SUFFIXES: .obj .parser .user_code.c
+
+
+all:  compile run
+
+simul1: compile simul
+
+clean: 
+	# rm -f *.parser *.user_code.c *.user_code.o *.tables_dump mark_find *.vstat *.events
+	rm -f *.parser  *.user_code.o *.tables_dump  *bak
+
+compile: 
+	@echo "Generating $(BASE).parser from $(BASE).obj file..."
+	@echo "call_one_arg_shortcut(Tangram2GenerateChain, \"0; 255; 1\");" | $(TGIF) -print -exec - $(BASE).obj
+
+	# @echo "Generating $(BASE).user_code.c from $(BASE).parser file..."
+	@$(GRAMATICA) -S $(BASE).parser $(BASE) 0
+
+	@echo "Generating new mark_find from $(BASE).obj file"
+	make -f $(MARKFIND_MAKEFILE) BASE=$(BASE)
+
+run:
+	rm -f mark_find
+	make -f $(MARKFIND_MAKEFILE) BASE=$(BASE)
+	cp ./mark_find ./mark_find$(BASE) 
+	./mark_find -f $(BASE) -G -d $(DEBUG_LEVEL)
+	solv $(BASE) 4 0.0000000000000001 100000000
+	# solv $(BASE) 5
+	 avgReward -i $(BASE).SS.power $(BASE).generator_mtx  $(ADDITIONAL) $(BASE).impulse_reward.MYOBJ.system_throughput
+	
+	@echo
+	@echo "*************************************************************************"
+	@echo "Done"
+	@echo "*************************************************************************"
+	@echo
+
+
+runnosolve:
+	rm -f mark_find
+	make -f $(MARKFIND_MAKEFILE) BASE=$(BASE)
+	cp ./mark_find ./mark_find$(BASE) 
+	./mark_find -f $(BASE) -G -d $(DEBUG_LEVEL)
+	
+	@echo
+	@echo "*************************************************************************"
+	@echo "Done"
+	@echo "*************************************************************************"
+	@echo
+
+
+onlysolve:
+	solv $(BASE) 4 0.0000000000000001 100000000
+	# solv $(BASE) 5
+	# avgReward -i $(BASE).SS.gth $(BASE).generator_mtx  $(ADDITIONAL) $(BASE).impulse_reward.MYOBJ.system_throughput
+	 avgReward -i $(BASE).SS.power $(BASE).generator_mtx  $(ADDITIONAL) $(BASE).impulse_reward.MYOBJ.system_throughput
+	 
+
+simul:
+	@echo "Preparing simulation..."
+	rm -f mark_find
+	make -f $(MARKFIND_MAKEFILE) BASE=$(BASE)
+	cp ./mark_find ./mark_find_simul_$(BASE) 
+	# ./mark_find -f $(BASE) -S -B -o simul$(BASE) -u 5 -r 40000 -c 1  -d $(DEBUG_LEVEL)
+	@echo "Simulating..."
+
+	./mark_find -f $(BASE) -S -B -o simul$(BASE) -u 5 -r 10000 -c 1  -d $(DEBUG_LEVEL) > simul$(BASE).out 2> simul$(BASE).err
+	# solv $(BASE) 4 0.0000000000000001 100000000
+	# solv $(BASE) 5
+	# avgReward -i $(BASE).SS.power $(BASE).generator_mtx  $(ADDITIONAL) $(BASE).impulse_reward.MYOBJ.system_throughput
+	
+	@echo
+	@echo "*************************************************************************"
+	@echo "Done"
+	@echo "*************************************************************************"
+	@echo
+
+
+
+help:
+	@echo
+	@echo "***************Powered By GD, Allyson and Bnetto (NOT BY FLAVIO)****************"
+	@echo "                                                 (NOT BY FLAVIO)"
+	@echo "                                                 (NOT BY FLAVIO)"
+	@echo "Usage: "
+	@echo "  make clean"
+	@echo "  or"
+	@echo "  make compile <BASE=model_base_name>"
+	@echo "  or"
+	@echo "  make [all|run] <BASE=model_base_name> <TIME=simul_time> [RUNS=num_of_runs]"
+	@echo
+	@echo "where:"
+	@echo "  compile: generates mark_find from <model_base_name>.obj (compiles the model)"
+	@echo "  run: generates a new mark_find from an existing $(BASE).user_code.c and runs "
+	@echo "       and runs the simulation"
+	@echo "  all: generates mark_find file from <model_base_name>.obj and runs a simulation"
+	@echo "********************************************************************************"
+	@echo
