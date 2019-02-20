@@ -1,1 +1,0 @@
-why do we need to protect all the instances of ev_clone with if's?  the auto-clones should not be automatically protected?
