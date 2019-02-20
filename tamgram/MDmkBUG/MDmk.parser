@@ -1,0 +1,254 @@
+ 
+Object_Desc Packet_Source (
+Declaration {
+
+ Const
+   Float: PAC_RATE;
+   Port: PORT;
+
+}
+Initialization {
+
+  PAC_RATE = 0.01474818636
+  PORT = wire
+
+}
+Events {
+
+
+ event= Packet_Generation(EXP, PAC_RATE)
+ condition= (TRUE)
+ action= {
+           msg(PORT, all, 0);
+         };
+}
+Messages {
+
+
+}
+Rewards {
+
+
+}
+)
+Object_Desc Server_Queue (
+Declaration {
+
+ Var
+  State: Queue, Server, Server1, Server2;
+
+ Const
+  Float: SERVICE_TIME1, SERVICE_TIME2, ALPHA;
+  Integer: QUEUE_SIZE, MAX_SERVERS;
+  Port: PORT,PORT1,PORT2;
+  Object: MYSELF;
+
+}
+Initialization {
+
+  Queue = 0 
+  Server = 0
+  Server1= 0
+  Server2= 0
+  SERVICE_TIME1 = 0.00369480879 // 0.01847404396 = 1/ 54.13
+  SERVICE_TIME2 = 0.00018474043 //  0.00092370219 = 1/ 1082.6
+  MAX_SERVERS = 5
+  QUEUE_SIZE = 10000
+  ALPHA=0.99
+  PORT = wire
+  PORT1= wire1
+  PORT2= wire2
+  MYSELF=Server_Queue
+}
+Events {
+
+ event=Service1(DET, SERVICE_TIME1)
+ condition=((Queue > 0)&&(Server1 > 0))
+ action= { int queue, server, server1,server2;
+
+           queue = Queue  - 1;
+           server = Server - 1;
+           server1= Server1- 1; server2=Server2;
+           printf("( %f ) Service 1 completed (%d, %d, %d, %d).\n",get_simul_time(), queue,server,server1,server2);
+           if (queue >= MAX_SERVERS) {
+              server = server + 1;
+              server1= server1+ 1;
+              msg(PORT1,MYSELF,0);
+
+              printf("( %f ) Service 1 will start\n",get_simul_time());
+
+
+           }
+           set_st("Queue", queue); 
+           set_st("Server", server);
+           set_st("Server1", server1);
+           set_st("Server2", server2);
+
+         }: prob=ALPHA;
+
+
+        { int queue, server, server1,server2;
+
+           queue = Queue  - 1;
+           server = Server - 1;
+           server1= Server1- 1; server2=Server2;
+           printf("( %f ) Service 1 completed (%d, %d, %d, %d).\n",get_simul_time(), queue,server,server1,server2);
+
+
+           if (queue >= MAX_SERVERS) {
+              server = server + 1;
+              server2= server2+ 1;
+              msg(PORT2,MYSELF,0);
+
+
+
+              printf("( %f ) Service 2 will start\n", get_simul_time());
+
+
+
+
+           }
+           set_st("Queue", queue); 
+           set_st("Server", server);
+           set_st("Server1", server1);
+           set_st("Server2", server2);
+
+         }: prob=1-ALPHA;
+
+
+
+ event=Service2(DET, SERVICE_TIME2)
+ condition=((Queue > 0) && (Server2 > 0))
+ action= { int queue, server, server1,server2;
+
+           queue = Queue  - 1;
+           server = Server - 1;
+           server1=Server1;server2= Server2- 1;
+           printf("( %f ) Service 2 completed (%d, %d, %d, %d).\n",get_simul_time(), queue,server,server1,server2);
+
+           if (queue >= MAX_SERVERS) {
+              server = server + 1;
+              server2= server2+ 1;
+              msg(PORT2,MYSELF,0);
+
+              printf("( %f ) Service 2 will start\n",get_simul_time());
+
+           }
+           set_st("Queue", queue); 
+           set_st("Server", server);
+           set_st("Server1", server1);
+           set_st("Server2", server2);
+
+         }: prob=1-ALPHA;
+         { int queue, server, server1,server2;
+
+           queue = Queue  - 1;
+           server = Server - 1;
+           server1=Server1;server2= Server2- 1;
+
+
+           printf("( %f ) Service 2 completed (%d, %d, %d, %d).\n",get_simul_time(), queue,server,server1,server2);
+
+
+           if (queue >= MAX_SERVERS) {
+              server = server + 1;
+              server1= server1+ 1;
+              msg(PORT1,MYSELF,0);
+
+
+              printf("( %f ) Service 1 will start\n",get_simul_time());
+
+
+
+           }
+           set_st("Queue", queue); 
+           set_st("Server", server);
+           set_st("Server1", server1);
+           set_st("Server2", server2);
+
+         }: prob=ALPHA;
+}
+Messages {
+
+ msg_rec=PORT
+ action= { 
+           int queue, server, server1, server2;
+
+           queue = Queue; server1=Server1; server2=Server2;
+           // if (queue < QUEUE_SIZE)
+           {   queue = queue  + 1; printf("( %f ) New client admitted ",get_simul_time()); }
+           // else {printf("( %f ) New client rejected.\n",get_simul_time());  }
+           server = Server;
+           if (server < MAX_SERVERS) {
+              server = server + 1; server1=server1+1; server2=Server2;
+              clone_ev("Service1");
+              printf(" imediately going to be served: type 1 (%d, %d, %d, %d).\n", queue,server,server1,server2);
+           }   
+           else { printf("  will wait (%d, %d, %d, %d).\n", queue,server,server1,server2); }
+
+           set_st("Queue", queue);
+           set_st("Server", server);
+
+           set_st("Server1", server1);
+           set_st("Server2", server2);
+         } : prob=ALPHA;
+
+ { 
+           int queue, server, server1, server2;
+
+           queue = Queue; server1=Server1; server2=Server2;
+           // if (queue < QUEUE_SIZE)
+           {   queue = queue  + 1; printf("( %f ) New client admitted ",get_simul_time()); }
+           // else {printf("( %f ) New client rejected.\n",get_simul_time());  }
+           server = Server;
+           if (server < MAX_SERVERS) {
+              server = server + 1; server2=server2+1; server1=Server1;
+              clone_ev("Service2");
+              printf(" imediately going to be served: type 2 (%d, %d, %d, %d).\n", queue,server,server1,server2);
+
+           }  
+           else { printf("  will wait (%d, %d, %d, %d).\n", queue,server,server1,server2); }
+ 
+           set_st("Queue", queue);
+           set_st("Server", server);
+
+           set_st("Server1", server1);
+           set_st("Server2", server2);
+         } : prob=1-ALPHA;
+
+
+  msg_rec=PORT1
+  action={
+         clone_ev("Service1");
+  };
+
+
+  msg_rec=PORT2
+  action={
+         clone_ev("Service2");
+  };
+}
+Rewards {
+
+ rate_reward=utilization
+    condition= (Queue > 0)
+    value= 1;
+ 
+ impulse_reward=arrived
+   Port = PORT, 1
+   value = 1;
+   
+ impulse_reward=served1
+   event = Service1, 1
+   value = 1;
+ 
+ impulse_reward=served2
+   event = Service2, 1
+   value = 1;
+  
+}
+)
+Global_Rewards {
+}
+Independent_Chains {
+}
