@@ -1,8 +1,11 @@
-# microservice
-This repository contains scripts in Python, Matlab and C++ code to study a distributed services environment, using the folowing structure: 
+#   Improving  Predictability of User-Affecting Metrics to Support Anomaly Detection in Cloud  Services
 
-1 - Generate the input jobs:
+# Description
 
-2 - M/G/K simulation:
+This repository contains companion material to the paper titled "Improving  Predictability of User-Affecting Metrics to Support Anomaly Detection in Cloud  Services".  Our technical report is made available here, together with source code to replicate the plots presented in the paper. 
 
-3 - Presentation data:
+# M/G/K queue simulator
+
+ We share scripts in Python and C++ to simulate an M/G/k queue, and we also include Matlab code to analytically approximate its behavior.
+ 
+
