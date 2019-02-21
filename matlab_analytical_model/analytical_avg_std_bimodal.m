@@ -3,7 +3,7 @@
 clear all
 hold off 
 
-OUTPUT_FOLDER_IMAGES = './img/analytical/';
+OUTPUT_FOLDER_IMAGES = './img/';
 
 savepdf = true;
 identifier   = ['^', 'o', 's'];
@@ -18,7 +18,7 @@ legd_txt =['', '', '','', '', ''];
 % B=270150; % mean service time of long jobs (long tail)
 A=54.13; % mean service time of short jobs
 B=95.2; % mean service time of long jobs (long tail)
-B_vec = [B, A/0.05, A/0.005, A/0.0005];
+B_vec = [B];
 alpha=0.995; % fraction of short jobs 
 alpha_vec = [0.6, 0.8, 0.99];
 rho_25_vec = [0.95, 0.8, 0.5]; % rho = lambda E(X) = system utilization
@@ -26,6 +26,7 @@ rho_ident_mu    = zeros(1,length(rho_25_vec));
 rho_ident_sigma = zeros(1,length(rho_25_vec));
 x_mu = 1;
 x_sigma = 1;
+k=[1:20];
 
 txt = sprintf('\\begin{tabular}{|c|c|c|c|c|}'); disp(txt);
 txt = sprintf('\\hline \n$E(X_S)/E(X_L)$ \t& $\\alpha$ \t& $\\rho$ \t& $min \\: k(\\mu)$  \t& $min \\: k(\\sigma)$ \t\\\\');
@@ -46,7 +47,7 @@ for B = B_vec
             moment2 = alpha * A^2 + (1-alpha) * B^2; % second moment of service time => E(X^2)
             moment3 = alpha * A^3 + (1-alpha) * B^3; % third moment of service time ==> E(X^3)
 
-            k=[1:1024];
+            
             rho_B= rho*(1-alpha)*B/moment1; 
             rho_A= rho*(alpha)  *A/moment1;
             

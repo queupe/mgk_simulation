@@ -45,11 +45,13 @@ if table_values
     %           \mu_{k=1}, \sigma_{k=1}
     
     if table_values_complete
-        txt = sprintf('\\begin{tabular}{|c|c|c|c|c|c|c|c|c|}'); disp(txt);
+        txt = sprintf('\\begin{tabular}{|c|c|c|c|c|rrr|rrr|r|r|}'); disp(txt);
         txt = sprintf('\\hline'); disp(txt);
-        txt = '$E_{S}/$ &          &        & \multicolumn{6}{c|}{analytical (simulation)} \\';
+        %txt = '$E_{S}/$ &          &        & \multicolumn{8}{c|}{analytical (simulation)} \\';
+        %disp(txt);
+        txt = '$E_{S}/$ &          &        & \multicolumn{6}{c|}{analytical (simulation)} & \multicolumn{2}{c|}{M/G/1}\\';
         disp(txt);
-        txt = '$E_{L}$  & $\alpha$ & $\rho$ & $K^{\star}_{\mu}$ & $K^{\star}_{\sigma}$ & $\mu^{\star}$ & $\sigma^{\star}$ & $\mu_{K=1}$ & $\sigma_{K=1}$ \\';
+        txt = '$E_{L}$  & $\alpha$ & $\rho$ & $K^{\star}_{\mu}$ & $K^{\star}_{\sigma}$ & \multicolumn{3}{c|}{$\mu^{\star}$} & \multicolumn{3}{c|}{$\sigma^{\star}$} & \multicolumn{1}{c|}{$\mu_{K=1}$} & \multicolumn{1}{c|}{$\sigma_{K=1}$} \\';
         disp(txt);
     else
         txt = sprintf('\\begin{tabular}{|c|c|c|c|c|c|c|}'); disp(txt);
@@ -126,6 +128,7 @@ for El = El_vec
             M  = (A(:,2));
             Mp = (A(:,3));
             Mn = (A(:,4));
+            Merro = A(:,3) - A(:,2);
 
             S =  (A(:,5));
             Sp = (A(:,6));
@@ -192,7 +195,7 @@ for El = El_vec
                     % (simul), \mu^{\star}(simul), \sigma^{\star}(simul), 
                     % \mu_{K=1}, \sigma_{K=1}
                     txt = sprintf('\t\t\\hline'); disp(txt);
-                    txt = sprintf('\t\t $%6.4f$ \t& $%4.2f$ \t& $%4.2f$ \t& $%d(%d)$ \t& $%d$(%d) \t& $%7.2f(%7.2f)$ \t& $%7.2f(%7.2f)$ \t& (%7.2f) \t& (%7.2f)  \\\\', Es/El, alpha1, rho, k_min, iMinM, k2_min, iMinS, T_min, MinM, T2_min, MinS, T(1), T2(1));
+                    txt = sprintf('\t\t $%6.4f$ \t& $%4.2f$ \t& $%4.2f$ \t& $%d(%d)$ \t& $%d(%d)$ \t& $%7.2f($ \t& $%7.2f\\pm$ & $%0.2f)$ \t& $%7.2f($ \t& $%7.2f\\pm$ & $%0.2f)$ \t& %7.2f \t& %7.2f  \\\\', Es/El, alpha1, rho, k_min, iMinM, k2_min, iMinS, T_min, MinM, Merro(iMinM), T2_min, MinS, Serro(iMinS), T(1), T2(1));
                     disp(txt);
                     
                 else
